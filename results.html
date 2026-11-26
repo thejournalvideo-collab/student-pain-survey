@@ -41,14 +41,15 @@
     <p class="howto muted small">How the ranking works: each student's #1 pain gets the most points, and every place lower gets one point less (#1 = 14, #2 = 13 … #14 = 1). A pain they didn't pick gets 0. Pains are ranked by total points.</p>
 
     <section class="card">
-      <h2>Pain point ranking, all courses</h2>
+      <h2>Pain point ranking</h2>
+      <p class="muted small" style="margin:0">Pain points from most to least painful, by total points.</p>
       <div class="scrollx"><table class="data" id="overall"></table></div>
     </section>
 
     <section class="card">
-      <h2>Pain point ranking by course of study</h2>
-      <p class="muted small" style="margin:0">Each number is the pain's position within that course (1 = biggest pain there). Top 3 in each course are highlighted. "–" means nobody on that course picked it.</p>
-      <div class="scrollx"><table class="data rankgrid" id="byCourse"></table></div>
+      <h2>Course of study ranking</h2>
+      <p class="muted small" style="margin:0">Courses from most to fewest students who answered.</p>
+      <div class="scrollx"><table class="data" id="byCourse"></table></div>
     </section>
   </section>
 </main>
@@ -65,6 +66,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js?v=20"></script>
-<script src="results.js?v=20"></script>
+<script src="results.js?v=21"></script>
 </body>
 </html>

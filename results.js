@@ -66,6 +66,15 @@
         return "<tr><td class='rank'>" + s.rank + "</td><td class='pain'>" + esc(s.pain) + "</td><td class='barcell'><div class='bar' style='width:" + Math.round(s.points / max * 100) + "%'></div></td><td class='pts'>" + s.points + "</td><td>" + s.picked + "</td></tr>";
       }).join("") + "</tbody>";
   }
+  function courseHTML(cs, limit) {
+    if (!cs.length) return "<tbody><tr><td class='empty-r'>No answers yet.</td></tr></tbody>";
+    var total = cs.reduce(function (a, c) { return a + c.n; }, 0), max = cs[0].n || 1;
+    cs.forEach(function (c, i) { c.rank = i > 0 && c.n === cs[i - 1].n ? cs[i - 1].rank : i + 1; });
+    return "<thead><tr><th>Rank</th><th>Course of study</th><th class='barcell'></th><th>Students</th><th>% of all</th></tr></thead><tbody>" +
+      cs.slice(0, limit || cs.length).map(function (c) {
+        return "<tr><td class='rank'>" + c.rank + "</td><td class='pain'>" + esc(c.name) + "</td><td class='barcell'><div class='bar' style='width:" + Math.round(c.n / max * 100) + "%'></div></td><td class='pts'>" + c.n + "</td><td>" + Math.round(c.n / total * 100) + "%</td></tr>";
+      }).join("") + "</tbody>";
+  }
   function gridHTML(list, cs, limit) {
     if (!list.length) return "<tbody><tr><td class='empty-r'>No answers yet.</td></tr></tbody>";
     return "<thead><tr><th>All courses</th><th>Pain point</th>" + cs.map(function (c) { return "<th class='course'>" + esc(c.name) + "<span class='n'>" + c.n + " student" + (c.n === 1 ? "" : "s") + "</span></th>"; }).join("") + "</tr></thead><tbody>" +
@@ -82,7 +91,7 @@
     $("status").textContent = all.length + " answer" + (all.length === 1 ? "" : "s") + " from " + cs.length + " course" + (cs.length === 1 ? "" : "s") +
       (lastLoaded ? " · updated " + stamp(lastLoaded) + " · refreshes every 30 s" : "");
     $("overall").innerHTML = overallHTML(list);
-    $("byCourse").innerHTML = gridHTML(list, cs);
+    $("byCourse").innerHTML = courseHTML(cs);
   }
 
   // ---------- Excel ----------
@@ -92,7 +101,12 @@
     var a = [["Rank", "Pain point", "Points", "Students who picked it"]];
     list.forEach(function (s) { a.push([s.rank, s.pain, s.points, s.picked]); });
     var w1 = XLSX.utils.aoa_to_sheet(a); w1["!cols"] = [{ wch: 6 }, { wch: 40 }, { wch: 8 }, { wch: 22 }];
-    XLSX.utils.book_append_sheet(wb, w1, "Ranking all courses");
+    XLSX.utils.book_append_sheet(wb, w1, "Pain point ranking");
+    var total = cs.reduce(function (t, x) { return t + x.n; }, 0), cr = [["Rank", "Course of study", "Students", "% of all"]];
+    cs.forEach(function (x, i) { var r = i > 0 && x.n === cs[i - 1].n ? cr[cr.length - 1][0] : i + 1; cr.push([r, x.name, x.n, total ? x.n / total : 0]); });
+    var wc = XLSX.utils.aoa_to_sheet(cr); wc["!cols"] = [{ wch: 6 }, { wch: 34 }, { wch: 10 }, { wch: 10 }];
+    for (var q = 1; q < cr.length; q++) { var ad = XLSX.utils.encode_cell({ r: q, c: 3 }); if (wc[ad]) wc[ad].z = "0%"; }
+    XLSX.utils.book_append_sheet(wb, wc, "Course of study ranking");
 
     var b = [["All courses rank", "Pain point"].concat(cs.map(function (c) { return c.name; })), ["", "Students"].concat(cs.map(function (c) { return c.n; }))];
     list.forEach(function (s) { b.push([s.rank, s.pain].concat(cs.map(function (c) { return c.byPain[s.pain] ? c.byPain[s.pain].rank : "–"; }))); });
@@ -120,8 +134,8 @@
     var css = "body{font-family:Calibri,Arial,sans-serif;color:#2a1e14}h1,h2{color:#93432c}table{border-collapse:collapse;width:100%;margin-bottom:12pt}th,td{border:1px solid #d8cbb8;padding:4pt 6pt;font-size:10.5pt;text-align:left}th{background:#f3ecdf}td.top{background:#a8462c;color:#fff;font-weight:bold}.bar{background:#a8462c;height:9pt}.barcell{width:30%}";
     var h = "<h1>Course of study and pain point ranking</h1><p><b>Answers:</b> " + all.length + " from " + cs.length + " course" + (cs.length === 1 ? "" : "s") + "<br><b>Exported:</b> " + esc(new Date().toLocaleString("en-GB")) +
       "<br><b>Points:</b> #1 = 14, #2 = 13 … #14 = 1, not picked = 0. Pains are ranked by total points.</p>";
-    h += "<h2>Pain point ranking, all courses</h2><table>" + overallHTML(list) + "</table>";
-    h += "<h2>Pain point ranking by course of study</h2><p>Position of each pain within each course (1 = biggest pain there). Top 3 highlighted.</p><table>" + gridHTML(list, cs) + "</table>";
+    h += "<h2>Pain point ranking</h2><table>" + overallHTML(list) + "</table>";
+    h += "<h2>Course of study ranking</h2><p>Courses ranked by number of students who answered.</p><table>" + courseHTML(cs) + "</table>";
     var doc = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Survey results</title><style>" + css + "</style></head><body>" + h + "</body></html>";
     var blob = new Blob(["﻿", doc], { type: "application/msword" });
     var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "course-pain-point-ranking-" + fileStamp() + ".doc";
@@ -133,9 +147,8 @@
   function buildSlides() {
     var list = rankList(all), cs = courses(all);
     slides = ["<p class='lead'>Student pain point survey</p><h1>Course of study and pain point ranking</h1><div class='big'>" + all.length + "</div><p class='lead'>students from " + cs.length + " course" + (cs.length === 1 ? "" : "s") + "</p>"];
-    slides.push("<h1>Pain point ranking, all courses</h1><table class='data'>" + overallHTML(list, 10) + "</table>");
-    if (cs.length) slides.push("<h1>Pain point ranking by course of study</h1><p class='lead'>Position within each course. Highlighted = top 3.</p><div class='scrollx'><table class='data rankgrid'>" + gridHTML(list, cs, 10) + "</table></div>");
-    cs.forEach(function (c) { slides.push("<p class='lead'>" + c.n + " student" + (c.n === 1 ? "" : "s") + "</p><h1>" + esc(c.name) + "</h1><table class='data'>" + overallHTML(c.list, 5) + "</table>"); });
+    slides.push("<h1>Pain point ranking</h1><table class='data'>" + overallHTML(list, 10) + "</table>");
+    slides.push("<h1>Course of study ranking</h1><p class='lead'>Courses ranked by number of students who answered</p><table class='data'>" + courseHTML(cs, 12) + "</table>");
   }
   function showSlide() { $("slide").innerHTML = slides[si]; $("slideNo").textContent = (si + 1) + " / " + slides.length; $("prevS").disabled = si === 0; $("nextS").disabled = si === slides.length - 1; }
   function step(d) { si = Math.max(0, Math.min(slides.length - 1, si + d)); showSlide(); }
