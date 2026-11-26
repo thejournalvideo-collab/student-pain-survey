@@ -6,14 +6,13 @@
 <meta name="robots" content="noindex">
 <title>Survey Results</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=9">
-<link rel="stylesheet" href="results.css?v=11">
+<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="results.css?v=20">
 </head>
 <body>
 <main class="wrap rwrap">
   <div class="brand">Student pain point survey · Results</div>
 
-  <!-- Unlock -->
   <section id="lock" class="card lockcard">
     <h1>Results</h1>
     <p class="muted">Enter your read key to load the answers. It's remembered on this device only.</p>
@@ -28,7 +27,7 @@
   <section id="app" hidden>
     <header class="rhead">
       <div>
-        <h1>What students say gets in the way</h1>
+        <h1>Course of study and pain point ranking</h1>
         <p class="muted small" id="status">Loading…</p>
       </div>
       <div class="actions">
@@ -39,70 +38,21 @@
       </div>
     </header>
 
-    <!-- Filters: one row -->
-    <div class="filters card" role="group" aria-label="Filters">
-      <label>Course of study <select id="fSubject"><option value="">All</option></select></label>
-      <label>Tried a project <select id="fTried"><option value="">All</option></select></label>
-      <label>Found it via <select id="fSource"><option value="">All</option></select></label>
-      <label class="inline"><input type="checkbox" id="fTest"> Include test answers</label>
-      <label class="inline"><input type="checkbox" id="fAuto" checked> Live (every 30 s)</label>
-    </div>
-
-    <div class="tiles">
-      <div class="tile"><div class="tlabel">Responses</div><div class="tval" id="tN">0</div></div>
-      <div class="tile wide"><div class="tlabel">Biggest pain right now</div><div class="tval sm" id="tTop">–</div><div class="tsub" id="tTopSub"></div></div>
-      <div class="tile"><div class="tlabel">Avg. pains ranked</div><div class="tval" id="tAvg">–</div></div>
-    </div>
+    <p class="howto muted small">How the ranking works: each student's #1 pain gets the most points, and every place lower gets one point less (#1 = 14, #2 = 13 … #14 = 1). A pain they didn't pick gets 0. Pains are ranked by total points.</p>
 
     <section class="card">
-      <div class="chead">
-        <h2>Pain points, ranked</h2>
-        <label class="inline">Rank by
-          <select id="rankBy">
-            <option value="score">Priority score (overall)</option>
-            <option value="top1">Most often ranked #1</option>
-            <option value="top3">Most often in top 3</option>
-            <option value="mentioned">Picked by the most students</option>
-            <option value="avgRank">Best average position</option>
-          </select>
-        </label>
-      </div>
-      <p class="muted small" id="rankHelp" style="margin:0"></p>
-      <div id="bars" class="bars"></div>
-      <details class="tablewrap"><summary>Show as a table</summary><div id="overallTable"></div></details>
+      <h2>Pain point ranking, all courses</h2>
+      <div class="scrollx"><table class="data" id="overall"></table></div>
     </section>
 
     <section class="card">
-      <div class="chead">
-        <h2>Compare groups</h2>
-        <label class="inline">Group by
-          <select id="groupBy">
-            <option value="subject">Course of study</option>
-            <option value="triedProject">Tried a project</option>
-            <option value="source">How they found it</option>
-          </select>
-        </label>
-      </div>
-      <p class="muted small" id="matrixHelp"></p>
-      <div class="scrollx"><table class="matrix" id="matrix"></table></div>
-    </section>
-
-    <section class="card">
-      <div class="chead">
-        <h2>Course of study and pain point ranking</h2>
-        <p class="muted small">Each course's own top 5, using the "Rank by" choice above. Hover for the counts.</p>
-      </div>
-      <div id="courseRank"></div>
-    </section>
-
-    <section class="card">
-      <h2>Pains students added themselves</h2>
-      <div id="customs"></div>
+      <h2>Pain point ranking by course of study</h2>
+      <p class="muted small" style="margin:0">Each number is the pain's position within that course (1 = biggest pain there). Top 3 in each course are highlighted. "–" means nobody on that course picked it.</p>
+      <div class="scrollx"><table class="data rankgrid" id="byCourse"></table></div>
     </section>
   </section>
 </main>
 
-<!-- Presentation -->
 <div id="deck" class="deck" hidden role="dialog" aria-modal="true" aria-label="Presentation">
   <div class="slide" id="slide"></div>
   <div class="deckbar">
@@ -112,10 +62,9 @@
     <button class="ghost dk" id="closeS" type="button">Close (Esc)</button>
   </div>
 </div>
-<div class="tip" id="tip" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="config.js?v=9"></script>
-<script src="results.js?v=12"></script>
+<script src="config.js?v=20"></script>
+<script src="results.js?v=20"></script>
 </body>
 </html>
