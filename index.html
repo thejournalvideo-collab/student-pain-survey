@@ -9,7 +9,7 @@
 <meta property="og:description" content="2 minutes, anonymous. Rank your biggest pain points.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <main class="wrap">
@@ -34,6 +34,7 @@
       <span>I'm a student aged 18 or over, I've read the above and I agree to take part.</span>
     </label>
     <div class="actions"><button class="primary" id="startBtn" type="button" disabled>Start</button></div>
+    <div class="card share" data-share="start" data-title="Share this survey" data-sub="Send the link to other students, or let them scan the code from your screen."></div>
   </section>
 
   <!-- 2. About you -->
@@ -108,27 +109,13 @@
       <p class="muted" style="margin:0">Your ranking, most painful first:</p>
       <ol id="doneList"></ol>
     </div>
-    <div class="card share">
-      <h2>Know other students? Pass it on</h2>
-      <p class="muted">The more students take part, the better the app will fit what you need.</p>
-      <div class="sharebtns">
-        <button class="primary" id="shareNative" type="button" hidden>Share…</button>
-        <a class="ghost btnlink" id="shareSms" href="#">Send by text</a>
-        <a class="ghost btnlink" id="shareWa" href="#" target="_blank" rel="noopener">WhatsApp</a>
-        <button class="ghost" id="copyLink" type="button">Copy link</button>
-      </div>
-      <p class="copied" id="copied" role="status"></p>
-      <div class="qrwrap">
-        <div id="qr" aria-label="QR code for this survey" role="img"></div>
-        <p class="muted small">Or let a friend scan this code from your screen.</p>
-      </div>
-    </div>
+    <div class="card share" data-share="end" data-title="Know other students? Pass it on" data-sub="The more students take part, the better the app will fit what you need."></div>
   </section>
 
   <div class="sr" aria-live="polite" id="live"></div>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="config.js?v=6"></script>
-<script src="app.js?v=6"></script>
+<script src="config.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

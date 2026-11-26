@@ -244,7 +244,7 @@
       store("psr-done", "1");
       var ol = $("doneList"); ol.innerHTML = "";
       rank.forEach(function (id) { var li = document.createElement("li"); li.textContent = items[id].text; ol.appendChild(li); });
-      show("s-done"); setupShare();
+      show("s-done");
     }).catch(function () {
       $("sendError").textContent = "Your answers didn't send. Check your connection and press Submit again.";
       $("sendError").hidden = false;
@@ -253,25 +253,42 @@
 
   // ---------- share ----------
   var shareText = "2 minute anonymous survey: what gets in the way when students work on ideas and projects?";
-  function setupShare() {
-    var textUrl = baseUrl + "?s=text", waUrl = baseUrl + "?s=whatsapp", linkUrl = baseUrl + "?s=link";
+  // Builds the same share box (QR + link to copy + text/WhatsApp) wherever data-share appears
+  function buildShare(box) {
+    var where = box.getAttribute("data-share");
+    var linkUrl = baseUrl + "?s=link", textUrl = baseUrl + "?s=text", waUrl = baseUrl + "?s=whatsapp";
     var isApple = /iPhone|iPad|Mac/.test(navigator.userAgent);
-    $("shareSms").href = "sms:" + (isApple ? "&" : "?") + "body=" + encodeURIComponent(shareText + " " + textUrl);
-    $("shareWa").href = "https://wa.me/?text=" + encodeURIComponent(shareText + " " + waUrl);
+    var inputId = "shareUrl-" + where;
+    box.innerHTML =
+      "<h2></h2><p class='muted' style='margin:0'></p>" +
+      "<div class='sharegrid'><div class='qr' role='img' aria-label='QR code for this survey'></div>" +
+      "<div class='sharemain'><label class='small muted' for='" + inputId + "'>Link to copy and send</label>" +
+      "<div class='linkrow'><input id='" + inputId + "' class='linkbox' readonly><button class='primary copybtn' type='button'>Copy link</button></div>" +
+      "<p class='copied' role='status'></p>" +
+      "<div class='sharebtns'><button class='ghost nativebtn' type='button' hidden>Share…</button>" +
+      "<a class='ghost smsbtn' href='#'>Send by text</a><a class='ghost wabtn' href='#' target='_blank' rel='noopener'>WhatsApp</a></div></div></div>";
+    box.querySelector("h2").textContent = box.getAttribute("data-title");
+    box.querySelector("p").textContent = box.getAttribute("data-sub");
+    var input = box.querySelector(".linkbox"), msg = box.querySelector(".copied");
+    input.value = linkUrl;
+    input.addEventListener("focus", function () { input.select(); });
+    box.querySelector(".copybtn").addEventListener("click", function () {
+      var ok = function () { msg.textContent = "Link copied. Paste it into a message."; };
+      var manual = function () { input.focus(); input.select(); msg.textContent = "Press and hold the link, then Copy."; };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(linkUrl).then(ok, manual); else manual();
+    });
+    box.querySelector(".smsbtn").href = "sms:" + (isApple ? "&" : "?") + "body=" + encodeURIComponent(shareText + " " + textUrl);
+    box.querySelector(".wabtn").href = "https://wa.me/?text=" + encodeURIComponent(shareText + " " + waUrl);
     if (navigator.share) {
-      $("shareNative").hidden = false;
-      $("shareNative").onclick = function () { navigator.share({ title: "Student survey", text: shareText, url: baseUrl + "?s=share" }).catch(function () {}); };
+      var nb = box.querySelector(".nativebtn"); nb.hidden = false;
+      nb.addEventListener("click", function () { navigator.share({ title: "Student survey", text: shareText, url: baseUrl + "?s=share" }).catch(function () {}); });
     }
-    $("copyLink").onclick = function () {
-      var done = function () { $("copied").textContent = "Link copied"; };
-      if (navigator.clipboard) navigator.clipboard.writeText(linkUrl).then(done, function () { prompt("Copy this link", linkUrl); });
-      else prompt("Copy this link", linkUrl);
-    };
     if (window.qrcode) {
       var q = qrcode(0, "M"); q.addData(baseUrl + "?s=qr-friend"); q.make();
-      $("qr").innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      box.querySelector(".qr").innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
     }
   }
+  document.querySelectorAll("[data-share]").forEach(buildShare);
 
   render();
 })();

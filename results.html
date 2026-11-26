@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex">
 <title>Survey Results</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=7">
-<link rel="stylesheet" href="results.css?v=7">
+<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="results.css?v=9">
 </head>
 <body>
 <main class="wrap rwrap">
@@ -57,8 +57,17 @@
     <section class="card">
       <div class="chead">
         <h2>Pain points, ranked</h2>
-        <p class="muted small">Bar = % of students who put it in their <b>top 3</b>. Sorted by priority score (#1 = 3 points, #2 = 2, #3 = 1).</p>
+        <label class="inline">Rank by
+          <select id="rankBy">
+            <option value="score">Priority score (overall)</option>
+            <option value="top1">Most often ranked #1</option>
+            <option value="top3">Most often in top 3</option>
+            <option value="mentioned">Picked by the most students</option>
+            <option value="avgRank">Best average position</option>
+          </select>
+        </label>
       </div>
+      <p class="muted small" id="rankHelp" style="margin:0"></p>
       <div id="bars" class="bars"></div>
       <details class="tablewrap"><summary>Show as a table</summary><div id="overallTable"></div></details>
     </section>
@@ -74,7 +83,7 @@
           </select>
         </label>
       </div>
-      <p class="muted small">Each cell = % of that group who put the pain in their top 3. Darker = more common. Groups under 5 students are marked as small, so treat them with care.</p>
+      <p class="muted small" id="matrixHelp"></p>
       <div class="scrollx"><table class="matrix" id="matrix"></table></div>
     </section>
 
@@ -98,7 +107,7 @@
 <div class="tip" id="tip" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="config.js?v=7"></script>
-<script src="results.js?v=8"></script>
+<script src="config.js?v=9"></script>
+<script src="results.js?v=9"></script>
 </body>
 </html>
