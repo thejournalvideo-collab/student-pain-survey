@@ -13,8 +13,20 @@ var HEADERS = ["Received", "Respondent ID", "Survey version", "Source", "Subject
   "Rank count", "Ranking (JSON)", "Custom added (JSON)", "Unranked (JSON)",
   "#1", "#2", "#3", "#4", "#5"];
 
-function sheet_() {
+// Works whether the script was opened from a Sheet or on its own (then it makes its own Sheet once)
+function spreadsheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty("SHEET_ID");
+  if (id) return SpreadsheetApp.openById(id);
+  ss = SpreadsheetApp.create("Student Pain Point Survey - Responses");
+  props.setProperty("SHEET_ID", ss.getId());
+  return ss;
+}
+
+function sheet_() {
+  var ss = spreadsheet_();
   var sh = ss.getSheetByName(SHEET);
   if (!sh) { sh = ss.insertSheet(SHEET); sh.appendRow(HEADERS); sh.setFrozenRows(1); }
   return sh;
@@ -51,7 +63,7 @@ function doPost(e) {
     sh.appendRow(row);
     return json_({ ok: true });
   } catch (err) {
-    return json_({ ok: false, error: "server" });
+    return json_({ ok: false, error: "server", detail: String(err && err.message || err).slice(0, 200) });
   } finally {
     try { lock.releaseLock(); } catch (_) {}
   }

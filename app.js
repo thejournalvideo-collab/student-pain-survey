@@ -219,13 +219,15 @@
   function send(body) {
     if (!CFG.endpoint) return Promise.reject(new Error("no endpoint"));
     // text/plain avoids a CORS preflight, which Apps Script cannot answer
-    return fetch(CFG.endpoint, { method: "POST", body: body, headers: { "Content-Type": "text/plain;charset=utf-8" } })
+    var opts = { method: "POST", body: body, headers: { "Content-Type": "text/plain;charset=utf-8" } };
+    return fetch(CFG.endpoint, opts)
       .then(function (r) { return r.json(); })
-      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "rejected"); })
-      .catch(function (err) {
-        if (err && /rejected|invalid/.test(err.message)) throw err;
-        // Response unreadable (e.g. a blocked redirect): send once more without reading the reply
-        return fetch(CFG.endpoint, { method: "POST", mode: "no-cors", body: body, headers: { "Content-Type": "text/plain;charset=utf-8" } });
+      .then(function (j) { return { reply: j }; }, function () { return { reply: null }; })
+      .then(function (res) {
+        if (res.reply) { if (!res.reply.ok) throw new Error("server said no"); return; }
+        // Reply unreadable (e.g. a blocked redirect): send once more without reading it.
+        // The sheet keeps one row per person, so a double send can't duplicate.
+        return fetch(CFG.endpoint, Object.assign({ mode: "no-cors" }, opts));
       });
   }
   $("submit").addEventListener("click", function () {
