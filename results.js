@@ -3,7 +3,7 @@
   var CFG = window.SURVEY_CONFIG || {};
   var $ = function (id) { return document.getElementById(id); };
   var KEY_STORE = "psr-read-key";
-  var GROUP_NAMES = { subject: "Subject area", triedProject: "Tried a project", source: "How they found it" };
+  var GROUP_NAMES = { subject: "Course of study", triedProject: "Tried a project", source: "How they found it" };
   var SOURCE_NAMES = { qr: "QR poster", "qr-friend": "QR from a friend", text: "Text message", whatsapp: "WhatsApp", link: "Copied link", share: "Phone share button", direct: "Direct link" };
   var all = [], timer = null, lastLoaded = null;
 
@@ -223,9 +223,9 @@
       XLSX.utils.book_append_sheet(wb, w, ("By " + GROUP_NAMES[f]).slice(0, 31));
     });
     var maxR = rows.reduce(function (a, r) { return Math.max(a, r.ranking.length); }, 0);
-    var raw = [["Received", "Subject area", "Tried a project", "Found via", "Pains ranked"].concat(Array.from({ length: maxR }, function (_, i) { return "#" + (i + 1); })).concat(["Added themselves"])];
+    var raw = [["Received", "Course of study", "Tried a project", "Found via", "Pains ranked"].concat(Array.from({ length: maxR }, function (_, i) { return "#" + (i + 1); })).concat(["Added themselves"])];
     rows.forEach(function (r) { raw.push([r.received, r.subject, r.triedProject, srcName(r.source), r.ranking.length].concat(Array.from({ length: maxR }, function (_, i) { return r.ranking[i] || ""; })).concat([r.custom.join("; ")])); });
-    var cr = [["Ranking by course (subject area)", "Ranked by: " + METRICS[metricKey()].name], [], ["Subject area", "Students", "Position", "Pain point", "Score", "% ranked #1", "% top 3", "% picked at all", "Avg. position"]];
+    var cr = [["Course of study and pain point ranking", "Ranked by: " + METRICS[metricKey()].name], [], ["Course of study", "Students", "Position", "Pain point", "Score", "% ranked #1", "% top 3", "% picked at all", "Avg. position"]];
     groups(rows, "subject").forEach(function (g) {
       stats(g.rows).forEach(function (s, i) { cr.push([g.name, g.rows.length, i + 1, s.pain, s.score, s.top1Pct / 100, s.top3Pct / 100, s.mentionedPct / 100, s.avgRank]); });
     });
@@ -246,7 +246,7 @@
       list.map(function (s, i) { return "<tr><td>" + (i + 1) + "</td><td>" + esc(s.pain) + "</td><td>" + s.top3Pct + "%</td><td><div class='bar' style='width:" + Math.max(s.top3Pct, 1) + "%'></div></td><td>" + s.top1Pct + "%</td><td>" + s.score + "</td></tr>"; }).join("") + "</table>";
     var cgs = groups(rows, "subject");
     if (cgs.length) {
-      h += "<h2>Ranking by course</h2><p>Each subject area's own ranking (by " + esc(METRICS[metricKey()].by) + ").</p>";
+      h += "<h2>Course of study and pain point ranking</h2><p>Each course's own ranking (by " + esc(METRICS[metricKey()].by) + ").</p>";
       cgs.forEach(function (g) {
         h += "<h3>" + esc(g.name) + " (" + g.rows.length + " student" + (g.rows.length === 1 ? "" : "s") + (g.rows.length < 5 ? ", small group" : "") + ")</h3><ol>" +
           stats(g.rows).slice(0, 10).map(function (s) { return "<li>" + esc(s.pain) + " (" + esc(mlabel(s)) + ")</li>"; }).join("") + "</ol>";
@@ -280,7 +280,7 @@
     var cg = groups(rows, "subject");
     for (var ci = 0; ci < cg.length; ci += 4) {
       var part = cg.slice(ci, ci + 4).reduce(function (a, g) { return a.concat(g.rows); }, []);
-      slides.push("<h1>Ranking by course" + (cg.length > 4 ? " (" + (ci / 4 + 1) + ")" : "") + "</h1><p class='lead'>Each course's top pains, by " + esc(METRICS[metricKey()].by) + "</p>" + courseHTML(part, 5));
+      slides.push("<h1>Course of study and pain points" + (cg.length > 4 ? " (" + (ci / 4 + 1) + ")" : "") + "</h1><p class='lead'>Each course's top pains, by " + esc(METRICS[metricKey()].by) + "</p>" + courseHTML(part, 5));
     }
     var c = customCounts(rows);
     if (c.length) slides.push("<h1>In their own words</h1><p class='lead'>Pains students added themselves</p><ul class='lead'>" + c.slice(0, 8).map(function (x) { return "<li>" + esc(x.text) + "</li>"; }).join("") + "</ul>");

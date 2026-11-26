@@ -41,7 +41,7 @@
 
     <!-- Filters: one row -->
     <div class="filters card" role="group" aria-label="Filters">
-      <label>Subject area <select id="fSubject"><option value="">All</option></select></label>
+      <label>Course of study <select id="fSubject"><option value="">All</option></select></label>
       <label>Tried a project <select id="fTried"><option value="">All</option></select></label>
       <label>Found it via <select id="fSource"><option value="">All</option></select></label>
       <label class="inline"><input type="checkbox" id="fTest"> Include test answers</label>
@@ -77,7 +77,7 @@
         <h2>Compare groups</h2>
         <label class="inline">Group by
           <select id="groupBy">
-            <option value="subject">Subject area</option>
+            <option value="subject">Course of study</option>
             <option value="triedProject">Tried a project</option>
             <option value="source">How they found it</option>
           </select>
@@ -89,8 +89,8 @@
 
     <section class="card">
       <div class="chead">
-        <h2>Ranking by course</h2>
-        <p class="muted small">Each subject area's own top 5, using the "Rank by" choice above. Hover for the counts.</p>
+        <h2>Course of study and pain point ranking</h2>
+        <p class="muted small">Each course's own top 5, using the "Rank by" choice above. Hover for the counts.</p>
       </div>
       <div id="courseRank"></div>
     </section>
@@ -116,6 +116,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js?v=9"></script>
-<script src="results.js?v=11"></script>
+<script src="results.js?v=12"></script>
 </body>
 </html>
