@@ -24,7 +24,7 @@
         all = (j.rows || []).map(function (r) {
           return { received: new Date(r.received), source: r.source || "direct", subject: r.subject || "Not given", triedProject: r.triedProject || "Not given",
             ranking: Array.isArray(r.ranking) ? r.ranking : [], custom: Array.isArray(r.customAdded) ? r.customAdded : [],
-            test: r.surveyVersion === "test" || r.subject === "TEST" || /^test/.test(r.source || "") };
+            test: r.surveyVersion === "test" || r.subject === "TEST" };
         });
         lastLoaded = new Date();
         $("lock").hidden = true; $("app").hidden = false;
@@ -92,7 +92,10 @@
 
   // ---------- render ----------
   function barsHTML(list, limit) {
-    if (!list.length) return "<p class='empty-r'>No answers yet for this selection.</p>";
+    if (!list.length) {
+      var hid = all.filter(function (r) { return r.test; }).length;
+      return "<p class='empty-r'>No answers yet for this selection." + (hid && !$("fTest").checked ? " " + hid + " test answer" + (hid > 1 ? "s are" : " is") + " hidden: tick <b>Include test answers</b> to see " + (hid > 1 ? "them" : "it") + "." : "") + "</p>";
+    }
     return list.slice(0, limit || list.length).map(function (s) {
       var tipTxt = s.pain + ": " + s.top3Pct + "% top 3 · " + s.top1Pct + "% ranked #1 · picked by " + s.mentionedPct + "% · score " + s.score;
       return "<div class='brow' data-tip='" + esc(tipTxt) + "'><div class='bname'>" + esc(s.pain) + (s.custom ? "<span class='yours'>student-added</span>" : "") +
