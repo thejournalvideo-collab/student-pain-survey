@@ -20,7 +20,7 @@
       .then(function (j) {
         if (!j.ok) throw new Error(j.error === "forbidden" ? "That key isn't right. Check Script properties > READ_KEY." : "The sheet couldn't be read.");
         all = (j.rows || []).filter(function (r) { return r.surveyVersion !== "test" && r.subject !== "TEST"; }).map(function (r) {
-          return { received: new Date(r.received), course: r.subject || "Not given", ranking: Array.isArray(r.ranking) ? r.ranking : [] };
+          return { received: new Date(r.received), course: r.subject || "Not given", sex: r.sex || "Not recorded", ranking: Array.isArray(r.ranking) ? r.ranking : [] };
         });
         lastLoaded = new Date();
         $("lock").hidden = true; $("app").hidden = false;
@@ -51,8 +51,9 @@
     list.forEach(function (s, i) { s.rank = i > 0 && s.points === list[i - 1].points ? list[i - 1].rank : i + 1; });
     return list;
   }
-  function courses(rows) {
-    var g = {}; rows.forEach(function (r) { (g[r.course] = g[r.course] || []).push(r); });
+  function courses(rows, field) {
+    field = field || "course";
+    var g = {}; rows.forEach(function (r) { (g[r[field]] = g[r[field]] || []).push(r); });
     return Object.keys(g).sort(function (a, b) { return g[b].length - g[a].length || a.localeCompare(b); })
       .map(function (k) { var list = rankList(g[k]), byPain = {}; list.forEach(function (s) { byPain[s.pain] = s; }); return { name: k, n: g[k].length, list: list, byPain: byPain }; });
   }
@@ -66,11 +67,11 @@
         return "<tr><td class='rank'>" + s.rank + "</td><td class='pain'>" + esc(s.pain) + "</td><td class='barcell'><div class='bar' style='width:" + Math.round(s.points / max * 100) + "%'></div></td><td class='pts'>" + s.points + "</td><td>" + s.picked + "</td></tr>";
       }).join("") + "</tbody>";
   }
-  function courseHTML(cs, limit) {
+  function courseHTML(cs, limit, label) {
     if (!cs.length) return "<tbody><tr><td class='empty-r'>No answers yet.</td></tr></tbody>";
     var total = cs.reduce(function (a, c) { return a + c.n; }, 0), max = cs[0].n || 1;
     cs.forEach(function (c, i) { c.rank = i > 0 && c.n === cs[i - 1].n ? cs[i - 1].rank : i + 1; });
-    return "<thead><tr><th>Rank</th><th>Course of study</th><th class='barcell'></th><th>Students</th><th>% of all</th></tr></thead><tbody>" +
+    return "<thead><tr><th>Rank</th><th>" + (label || "Course of study") + "</th><th class='barcell'></th><th>Students</th><th>% of all</th></tr></thead><tbody>" +
       cs.slice(0, limit || cs.length).map(function (c) {
         return "<tr><td class='rank'>" + c.rank + "</td><td class='pain'>" + esc(c.name) + "</td><td class='barcell'><div class='bar' style='width:" + Math.round(c.n / max * 100) + "%'></div></td><td class='pts'>" + c.n + "</td><td>" + Math.round(c.n / total * 100) + "%</td></tr>";
       }).join("") + "</tbody>";
@@ -92,6 +93,7 @@
       (lastLoaded ? " · updated " + stamp(lastLoaded) + " · refreshes every 30 s" : "");
     $("overall").innerHTML = overallHTML(list);
     $("byCourse").innerHTML = courseHTML(cs);
+    $("bySex").innerHTML = courseHTML(courses(all, "sex"), 0, "Sex");
   }
 
   // ---------- Excel ----------
@@ -107,6 +109,11 @@
     var wc = XLSX.utils.aoa_to_sheet(cr); wc["!cols"] = [{ wch: 6 }, { wch: 34 }, { wch: 10 }, { wch: 10 }];
     for (var q = 1; q < cr.length; q++) { var ad = XLSX.utils.encode_cell({ r: q, c: 3 }); if (wc[ad]) wc[ad].z = "0%"; }
     XLSX.utils.book_append_sheet(wb, wc, "Course of study ranking");
+    var sx = courses(all, "sex"), sr = [["Rank", "Sex", "Students", "% of all"]];
+    sx.forEach(function (x, i) { var r = i > 0 && x.n === sx[i - 1].n ? sr[sr.length - 1][0] : i + 1; sr.push([r, x.name, x.n, total ? x.n / total : 0]); });
+    var wsx = XLSX.utils.aoa_to_sheet(sr); wsx["!cols"] = [{ wch: 6 }, { wch: 20 }, { wch: 10 }, { wch: 10 }];
+    for (var q2 = 1; q2 < sr.length; q2++) { var ad2 = XLSX.utils.encode_cell({ r: q2, c: 3 }); if (wsx[ad2]) wsx[ad2].z = "0%"; }
+    XLSX.utils.book_append_sheet(wb, wsx, "Sex ranking");
 
     var b = [["All courses rank", "Pain point"].concat(cs.map(function (c) { return c.name; })), ["", "Students"].concat(cs.map(function (c) { return c.n; }))];
     list.forEach(function (s) { b.push([s.rank, s.pain].concat(cs.map(function (c) { return c.byPain[s.pain] ? c.byPain[s.pain].rank : "–"; }))); });
@@ -119,8 +126,8 @@
     XLSX.utils.book_append_sheet(wb, w3, "Points by course of study");
 
     var maxR = all.reduce(function (m, r) { return Math.max(m, r.ranking.length); }, 0);
-    var d = [["Received", "Course of study"].concat(Array.from({ length: maxR }, function (_, i) { return "#" + (i + 1); }))];
-    all.forEach(function (r) { d.push([r.received, r.course].concat(Array.from({ length: maxR }, function (_, i) { return r.ranking[i] || ""; }))); });
+    var d = [["Received", "Course of study", "Sex"].concat(Array.from({ length: maxR }, function (_, i) { return "#" + (i + 1); }))];
+    all.forEach(function (r) { d.push([r.received, r.course, r.sex].concat(Array.from({ length: maxR }, function (_, i) { return r.ranking[i] || ""; }))); });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(d, { cellDates: true }), "All answers");
 
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Student pain point survey"], ["Exported", new Date().toLocaleString("en-GB")], ["Answers", all.length],
@@ -136,6 +143,7 @@
       "<br><b>Points:</b> #1 = 14, #2 = 13 … #14 = 1, not picked = 0. Pains are ranked by total points.</p>";
     h += "<h2>Pain point ranking</h2><table>" + overallHTML(list) + "</table>";
     h += "<h2>Course of study ranking</h2><p>Courses ranked by number of students who answered.</p><table>" + courseHTML(cs) + "</table>";
+    h += "<h2>Sex ranking</h2><p>Ranked by number of students who answered.</p><table>" + courseHTML(courses(all, "sex"), 0, "Sex") + "</table>";
     var doc = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Survey results</title><style>" + css + "</style></head><body>" + h + "</body></html>";
     var blob = new Blob(["﻿", doc], { type: "application/msword" });
     var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "course-pain-point-ranking-" + fileStamp() + ".doc";
@@ -149,6 +157,7 @@
     slides = ["<p class='lead'>Student pain point survey</p><h1>Course of study and pain point ranking</h1><div class='big'>" + all.length + "</div><p class='lead'>students from " + cs.length + " course" + (cs.length === 1 ? "" : "s") + "</p>"];
     slides.push("<h1>Pain point ranking</h1><table class='data'>" + overallHTML(list, 10) + "</table>");
     slides.push("<h1>Course of study ranking</h1><p class='lead'>Courses ranked by number of students who answered</p><table class='data'>" + courseHTML(cs, 12) + "</table>");
+    slides.push("<h1>Sex ranking</h1><p class='lead'>Ranked by number of students who answered</p><table class='data'>" + courseHTML(courses(all, "sex"), 0, "Sex") + "</table>");
   }
   function showSlide() { $("slide").innerHTML = slides[si]; $("slideNo").textContent = (si + 1) + " / " + slides.length; $("prevS").disabled = si === 0; $("nextS").disabled = si === slides.length - 1; }
   function step(d) { si = Math.max(0, Math.min(slides.length - 1, si + d)); showSlide(); }

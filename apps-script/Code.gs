@@ -11,7 +11,7 @@
 var SHEET = "Responses";
 var HEADERS = ["Received", "Respondent ID", "Survey version", "Source", "Subject area", "Tried a project",
   "Rank count", "Ranking (JSON)", "Custom added (JSON)", "Unranked (JSON)",
-  "#1", "#2", "#3", "#4", "#5"];
+  "#1", "#2", "#3", "#4", "#5", "Sex"];
 
 // Works whether the script was opened from a Sheet or on its own (then it makes its own Sheet once)
 function spreadsheet_() {
@@ -29,6 +29,8 @@ function sheet_() {
   var ss = spreadsheet_();
   var sh = ss.getSheetByName(SHEET);
   if (!sh) { sh = ss.insertSheet(SHEET); sh.appendRow(HEADERS); sh.setFrozenRows(1); }
+  // Older sheets: add any header that is missing at the end (e.g. "Sex")
+  if (sh.getLastColumn() < HEADERS.length) sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
   return sh;
 }
 
@@ -53,7 +55,7 @@ function doPost(e) {
     if (!id || ranking.length < 3) return json_({ ok: false, error: "invalid" });
     var row = [new Date(), id, clean_(d.surveyVersion, 20), clean_(d.source, 20), clean_(d.subject, 60), clean_(d.triedProject, 30),
       ranking.length, JSON.stringify(ranking), JSON.stringify(cleanList_(d.customAdded, 10)), JSON.stringify(cleanList_(d.unranked)),
-      ranking[0] || "", ranking[1] || "", ranking[2] || "", ranking[3] || "", ranking[4] || ""];
+      ranking[0] || "", ranking[1] || "", ranking[2] || "", ranking[3] || "", ranking[4] || "", clean_(d.sex, 30)];
     var sh = sheet_();
     // One answer per person: a repeat submission replaces their earlier row
     var ids = sh.getLastRow() > 1 ? sh.getRange(2, 2, sh.getLastRow() - 1, 1).getValues() : [];
@@ -77,7 +79,7 @@ function doGet(e) {
   var head = values.shift();
   var rows = values.map(function (r) {
     return {
-      received: r[0], source: r[3], subject: r[4], triedProject: r[5],
+      received: r[0], source: r[3], subject: r[4], triedProject: r[5], sex: r[15] || "",
       ranking: JSON.parse(r[7] || "[]"), customAdded: JSON.parse(r[8] || "[]"), surveyVersion: r[2]
     };
   });

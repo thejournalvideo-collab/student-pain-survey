@@ -24,7 +24,7 @@
     store("psr-id", respondentId);
   }
 
-  var state = { subject: "", tried: "" };
+  var state = { subject: "", sex: "", tried: "" };
 
   // ---------- screens ----------
   function show(id) {
@@ -43,20 +43,24 @@
   $("startBtn").addEventListener("click", function () { show("s-about"); });
 
   // ---------- about you ----------
-  function aboutReady() { $("aboutNext").disabled = !(state.subject && state.tried); }
+  function aboutReady() { $("aboutNext").disabled = !(state.subject && state.sex && state.tried); }
   $("subject").addEventListener("change", function () { state.subject = this.value; aboutReady(); });
-  var choices = document.querySelectorAll(".choice");
-  choices.forEach(function (c, i) {
-    c.addEventListener("click", function () { pick(c); });
-    c.addEventListener("keydown", function (e) {
-      var d = (e.key === "ArrowRight" || e.key === "ArrowDown") ? 1 : (e.key === "ArrowLeft" || e.key === "ArrowUp") ? -1 : 0;
-      if (!d) return; e.preventDefault(); var n = choices[(i + d + choices.length) % choices.length]; n.focus(); pick(n);
+  // Each radiogroup (data-field="tried" / "sex") works on its own
+  document.querySelectorAll("[role=radiogroup][data-field]").forEach(function (group) {
+    var field = group.getAttribute("data-field"), choices = group.querySelectorAll(".choice");
+    function pick(c) {
+      choices.forEach(function (x) { x.setAttribute("aria-checked", x === c ? "true" : "false"); x.tabIndex = x === c ? 0 : -1; });
+      state[field] = c.dataset.v; aboutReady();
+    }
+    choices.forEach(function (c, i) {
+      c.tabIndex = i === 0 ? 0 : -1;
+      c.addEventListener("click", function () { pick(c); });
+      c.addEventListener("keydown", function (e) {
+        var d = (e.key === "ArrowRight" || e.key === "ArrowDown") ? 1 : (e.key === "ArrowLeft" || e.key === "ArrowUp") ? -1 : 0;
+        if (!d) return; e.preventDefault(); var n = choices[(i + d + choices.length) % choices.length]; n.focus(); pick(n);
+      });
     });
   });
-  function pick(c) {
-    choices.forEach(function (x) { x.setAttribute("aria-checked", x === c ? "true" : "false"); x.tabIndex = x === c ? 0 : -1; });
-    state.tried = c.dataset.v; aboutReady();
-  }
   $("aboutNext").addEventListener("click", function () { show("s-rank"); });
 
   // ---------- ranking board ----------
@@ -217,6 +221,7 @@
       source: source,
       subject: state.subject,
       triedProject: state.tried,
+      sex: state.sex,
       ranking: rank.map(function (id) { return items[id].text; }),
       customAdded: Object.keys(items).filter(function (k) { return items[k].custom; }).map(function (k) { return items[k].text; }),
       unranked: pool.map(function (id) { return items[id].text; }),
