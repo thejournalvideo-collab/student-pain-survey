@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Survey Results</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="results.css?v=5">
+</head>
+<body>
+<main class="wrap rwrap">
+  <div class="brand">Student pain point survey · Results</div>
+
+  <!-- Unlock -->
+  <section id="lock" class="card lockcard">
+    <h1>Results</h1>
+    <p class="muted">Enter your read key to load the answers. It's remembered on this device only.</p>
+    <form id="keyForm" class="keyrow">
+      <label class="sr" for="keyInput">Read key</label>
+      <input id="keyInput" type="password" autocomplete="current-password" placeholder="Read key">
+      <button class="primary" type="submit">Load results</button>
+    </form>
+    <p class="error" id="keyError" role="alert" hidden></p>
+  </section>
+
+  <section id="app" hidden>
+    <header class="rhead">
+      <div>
+        <h1>What students say gets in the way</h1>
+        <p class="muted small" id="status">Loading…</p>
+      </div>
+      <div class="actions">
+        <button class="ghost" id="refreshBtn" type="button">Refresh</button>
+        <button class="ghost" id="xlsxBtn" type="button">Excel</button>
+        <button class="ghost" id="docBtn" type="button">Word</button>
+        <button class="primary" id="presentBtn" type="button">Present</button>
+      </div>
+    </header>
+
+    <!-- Filters: one row -->
+    <div class="filters card" role="group" aria-label="Filters">
+      <label>Subject area <select id="fSubject"><option value="">All</option></select></label>
+      <label>Tried a project <select id="fTried"><option value="">All</option></select></label>
+      <label>Found it via <select id="fSource"><option value="">All</option></select></label>
+      <label class="inline"><input type="checkbox" id="fTest"> Include test answers</label>
+      <label class="inline"><input type="checkbox" id="fAuto" checked> Live (every 30 s)</label>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="tlabel">Responses</div><div class="tval" id="tN">0</div></div>
+      <div class="tile wide"><div class="tlabel">Biggest pain right now</div><div class="tval sm" id="tTop">–</div><div class="tsub" id="tTopSub"></div></div>
+      <div class="tile"><div class="tlabel">Avg. pains ranked</div><div class="tval" id="tAvg">–</div></div>
+    </div>
+
+    <section class="card">
+      <div class="chead">
+        <h2>Pain points, ranked</h2>
+        <p class="muted small">Bar = % of students who put it in their <b>top 3</b>. Sorted by priority score (#1 = 3 points, #2 = 2, #3 = 1).</p>
+      </div>
+      <div id="bars" class="bars"></div>
+      <details class="tablewrap"><summary>Show as a table</summary><div id="overallTable"></div></details>
+    </section>
+
+    <section class="card">
+      <div class="chead">
+        <h2>Compare groups</h2>
+        <label class="inline">Group by
+          <select id="groupBy">
+            <option value="subject">Subject area</option>
+            <option value="triedProject">Tried a project</option>
+            <option value="source">How they found it</option>
+          </select>
+        </label>
+      </div>
+      <p class="muted small">Each cell = % of that group who put the pain in their top 3. Darker = more common. Groups under 5 students are marked as small, so treat them with care.</p>
+      <div class="scrollx"><table class="matrix" id="matrix"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>Pains students added themselves</h2>
+      <div id="customs"></div>
+    </section>
+  </section>
+</main>
+
+<!-- Presentation -->
+<div id="deck" class="deck" hidden role="dialog" aria-modal="true" aria-label="Presentation">
+  <div class="slide" id="slide"></div>
+  <div class="deckbar">
+    <button class="ghost dk" id="prevS" type="button" aria-label="Previous slide">←</button>
+    <span id="slideNo"></span>
+    <button class="ghost dk" id="nextS" type="button" aria-label="Next slide">→</button>
+    <button class="ghost dk" id="closeS" type="button">Close (Esc)</button>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js?v=5"></script>
+<script src="results.js?v=5"></script>
+</body>
+</html>
