@@ -59,3 +59,4 @@ table.matrix td.top { outline: 2px solid var(--text); outline-offset: -3px; }
   .brow { grid-template-columns: minmax(0, 1fr) 46px; } .brow .btrack { grid-column: 1 / -1; grid-row: 2; }
 }
 @media print { .deck, .filters, .actions { display: none !important; } }
+#app { display: flex; flex-direction: column; gap: 16px; }
