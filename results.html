@@ -7,7 +7,7 @@
 <title>Survey Results</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css?v=9">
-<link rel="stylesheet" href="results.css?v=9">
+<link rel="stylesheet" href="results.css?v=11">
 </head>
 <body>
 <main class="wrap rwrap">
@@ -88,6 +88,14 @@
     </section>
 
     <section class="card">
+      <div class="chead">
+        <h2>Ranking by course</h2>
+        <p class="muted small">Each subject area's own top 5, using the "Rank by" choice above. Hover for the counts.</p>
+      </div>
+      <div id="courseRank"></div>
+    </section>
+
+    <section class="card">
       <h2>Pains students added themselves</h2>
       <div id="customs"></div>
     </section>
@@ -108,6 +116,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js?v=9"></script>
-<script src="results.js?v=10"></script>
+<script src="results.js?v=11"></script>
 </body>
 </html>

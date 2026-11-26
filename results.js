@@ -154,6 +154,18 @@
     });
     return h + "</tbody>";
   }
+  // One numbered ranking per subject area, in that group's own order
+  function courseHTML(rows, limit) {
+    var gs = groups(rows, "subject");
+    if (!gs.length) return "<p class='empty-r'>No answers yet for this selection.</p>";
+    return "<div class='courses'>" + gs.map(function (g) {
+      var list = stats(g.rows).slice(0, limit || 5);
+      return "<div class='course'><div class='course-head'><h3>" + esc(g.name) + "</h3><span class='muted small'>" + g.rows.length + " student" + (g.rows.length === 1 ? "" : "s") +
+        (g.rows.length < 5 ? " · small group" : "") + "</span></div><ol>" + list.map(function (s) {
+          return "<li data-tip='" + esc(g.name + " · " + s.pain + ": " + s.top3 + " of " + g.rows.length + " in top 3, " + s.top1 + " ranked #1") + "'><span class='cp'>" + esc(s.pain) + "</span><span class='cv'>" + mlabel(s) + "</span></li>";
+        }).join("") + "</ol></div>";
+    }).join("") + "</div>";
+  }
   function customsHTML(rows) {
     var c = customCounts(rows);
     if (!c.length) return "<p class='empty-r'>No student has added their own pain point yet.</p>";
@@ -175,6 +187,7 @@
     $("overallTable").innerHTML = list.length ? overallTableHTML(list) : "";
     $("matrix").innerHTML = matrixHTML(rows, $("groupBy").value);
     $("customs").innerHTML = customsHTML(rows);
+    $("courseRank").innerHTML = courseHTML(rows);
   }
 
   // Hover tooltips (bars and matrix cells)
@@ -212,6 +225,13 @@
     var maxR = rows.reduce(function (a, r) { return Math.max(a, r.ranking.length); }, 0);
     var raw = [["Received", "Subject area", "Tried a project", "Found via", "Pains ranked"].concat(Array.from({ length: maxR }, function (_, i) { return "#" + (i + 1); })).concat(["Added themselves"])];
     rows.forEach(function (r) { raw.push([r.received, r.subject, r.triedProject, srcName(r.source), r.ranking.length].concat(Array.from({ length: maxR }, function (_, i) { return r.ranking[i] || ""; })).concat([r.custom.join("; ")])); });
+    var cr = [["Ranking by course (subject area)", "Ranked by: " + METRICS[metricKey()].name], [], ["Subject area", "Students", "Position", "Pain point", "Score", "% ranked #1", "% top 3", "% picked at all", "Avg. position"]];
+    groups(rows, "subject").forEach(function (g) {
+      stats(g.rows).forEach(function (s, i) { cr.push([g.name, g.rows.length, i + 1, s.pain, s.score, s.top1Pct / 100, s.top3Pct / 100, s.mentionedPct / 100, s.avgRank]); });
+    });
+    var wsc = XLSX.utils.aoa_to_sheet(cr); wsc["!cols"] = [{ wch: 30 }, { wch: 9 }, { wch: 9 }, { wch: 40 }];
+    for (var rr = 3; rr < cr.length; rr++) [5, 6, 7].forEach(function (c) { var a = XLSX.utils.encode_cell({ r: rr, c: c }); if (wsc[a]) wsc[a].z = "0%"; });
+    XLSX.utils.book_append_sheet(wb, wsc, "Ranking by course");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(raw, { cellDates: true }), "All answers");
     XLSX.writeFile(wb, "student-pain-points-" + fileStamp() + ".xlsx");
   });
@@ -224,6 +244,14 @@
     if (list.length) h += "<p><b>Headline:</b> the biggest pain is <b>" + esc(list[0].pain) + "</b>. " + list[0].top3Pct + "% of students put it in their top 3 and " + list[0].top1Pct + "% ranked it first.</p>";
     h += "<h2>Pain points, ranked</h2><p>Score: #1 = 3 points, #2 = 2, #3 = 1.</p><table><tr><th>#</th><th>Pain point</th><th>% top 3</th><th style='width:30%'></th><th>% ranked #1</th><th>Score</th></tr>" +
       list.map(function (s, i) { return "<tr><td>" + (i + 1) + "</td><td>" + esc(s.pain) + "</td><td>" + s.top3Pct + "%</td><td><div class='bar' style='width:" + Math.max(s.top3Pct, 1) + "%'></div></td><td>" + s.top1Pct + "%</td><td>" + s.score + "</td></tr>"; }).join("") + "</table>";
+    var cgs = groups(rows, "subject");
+    if (cgs.length) {
+      h += "<h2>Ranking by course</h2><p>Each subject area's own ranking (by " + esc(METRICS[metricKey()].by) + ").</p>";
+      cgs.forEach(function (g) {
+        h += "<h3>" + esc(g.name) + " (" + g.rows.length + " student" + (g.rows.length === 1 ? "" : "s") + (g.rows.length < 5 ? ", small group" : "") + ")</h3><ol>" +
+          stats(g.rows).slice(0, 10).map(function (s) { return "<li>" + esc(s.pain) + " (" + esc(mlabel(s)) + ")</li>"; }).join("") + "</ol>";
+      });
+    }
     ["subject", "triedProject"].forEach(function (f) {
       var gs = groups(rows, f); if (!gs.length) return;
       h += "<h2>By " + GROUP_NAMES[f].toLowerCase() + "</h2><p>Top 3 pains in each group (% of that group who put it in their top 3).</p><table><tr><th>Group</th><th>Students</th><th>1st</th><th>2nd</th><th>3rd</th></tr>";
@@ -249,6 +277,11 @@
     ["subject", "triedProject"].forEach(function (f) {
       if (groups(rows, f).length > 1) slides.push("<h1>By " + GROUP_NAMES[f].toLowerCase() + "</h1><p class='lead'>Each cell = " + esc(METRICS[metricKey()].cell) + " within each group. Outlined = that group's #1.</p><div class='scrollx'><table class='matrix'>" + matrixHTML(rows, f, 8) + "</table></div>");
     });
+    var cg = groups(rows, "subject");
+    for (var ci = 0; ci < cg.length; ci += 4) {
+      var part = cg.slice(ci, ci + 4).reduce(function (a, g) { return a.concat(g.rows); }, []);
+      slides.push("<h1>Ranking by course" + (cg.length > 4 ? " (" + (ci / 4 + 1) + ")" : "") + "</h1><p class='lead'>Each course's top pains, by " + esc(METRICS[metricKey()].by) + "</p>" + courseHTML(part, 5));
+    }
     var c = customCounts(rows);
     if (c.length) slides.push("<h1>In their own words</h1><p class='lead'>Pains students added themselves</p><ul class='lead'>" + c.slice(0, 8).map(function (x) { return "<li>" + esc(x.text) + "</li>"; }).join("") + "</ul>");
   }
