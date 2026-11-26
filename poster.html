@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Survey QR Poster</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&display=swap">
+<style>
+  @page { size: A4; margin: 14mm; }
+  body { margin: 0; font-family: "Geist", system-ui, Arial, sans-serif; color: #2a1e14; background: #faf6f0; }
+  .poster { max-width: 180mm; margin: 0 auto; padding: 24px 16px; text-align: center; display: flex; flex-direction: column; gap: 18px; align-items: center; }
+  .tag { font-size: 14px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #93432c; }
+  h1 { margin: 0; font-size: clamp(28px, 6vw, 46px); line-height: 1.1; text-wrap: balance; }
+  p { margin: 0; font-size: 18px; color: #6b5a4a; }
+  #qr { background: #fff; padding: 18px; border-radius: 16px; border: 3px solid #c1583a; line-height: 0; }
+  #qr svg { width: min(90mm, 75vw); height: auto; display: block; }
+  .url { font-size: 15px; font-weight: 600; color: #2a1e14; word-break: break-all; }
+  .noprint { font-size: 14px; } @media print { .noprint { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="tag">Students: 2 minutes, anonymous</div>
+  <h1>What gets in the way when you work on ideas or projects?</h1>
+  <p>Scan to rank your biggest pain points and help shape a new student app.</p>
+  <div id="qr" role="img" aria-label="QR code to the survey"></div>
+  <div class="url" id="url"></div>
+  <p class="noprint">Print this page (Ctrl+P) or screenshot the code to share it.</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+  var base = location.origin + location.pathname.replace(/poster\.html$/, "");
+  document.getElementById("url").textContent = base.replace(/^https?:\/\//, "");
+  var q = qrcode(0, "M"); q.addData(base + "?s=qr"); q.make();
+  document.getElementById("qr").innerHTML = q.createSvgTag({ cellSize: 8, margin: 0, scalable: true });
+</script>
+</body>
+</html>
