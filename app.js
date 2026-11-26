@@ -154,7 +154,9 @@
     var r = drag.el.getBoundingClientRect();
     drag.active = true; drag.dx = x - r.left; drag.dy = y - r.top;
     var g = drag.el.cloneNode(true); g.classList.add("ghostdrag"); g.style.width = r.width + "px"; g.style.left = r.left + "px"; g.style.top = r.top + "px";
-    document.body.appendChild(g); drag.ghost = g; drag.el.classList.add("dragging");
+    g.removeAttribute("id"); g.style.height = r.height + "px";
+    document.body.appendChild(g); drag.ghost = g; drag.el.classList.add("dragging"); document.body.classList.add("is-dragging");
+    var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges();
     drag.ph = document.createElement("div"); drag.ph.className = "placeholder";
     if (navigator.vibrate) try { navigator.vibrate(10); } catch (_) {}
   }
@@ -187,7 +189,7 @@
     var d = drag; drag = null;
     if (!d.active) return;
     suppressClick = true; setTimeout(function () { suppressClick = false; }, 0);
-    d.ghost.remove(); d.el.classList.remove("dragging");
+    d.ghost.remove(); d.el.classList.remove("dragging"); document.body.classList.remove("is-dragging");
     $("colRank").classList.remove("over"); $("colPool").classList.remove("over");
     var zone = cancelled ? null : zoneAt(e.clientX, e.clientY);
     if (zone === "rank" && d.ph.parentNode) {
@@ -200,6 +202,11 @@
   document.addEventListener("pointerup", function (e) { end(e, false); });
   document.addEventListener("pointercancel", function (e) { end(e, true); });
   document.addEventListener("contextmenu", function (e) { if (e.target.closest(".opt, .ranked")) e.preventDefault(); });
+  // Stop the phone's own "drag the text" and text selection from taking over our drag
+  ["dragstart", "selectstart"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { var t = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+      if (t && t.closest(".opt, .ranked") && !t.closest("input")) e.preventDefault(); });
+  });
 
   // ---------- submit ----------
   var sending = false;

@@ -77,7 +77,9 @@ form.addform .row button { flex: 1; padding-inline: 8px; }
 .ghost:hover { border-color: var(--accent); }
 :focus-visible { outline: 3px solid var(--secondary); outline-offset: 2px; }
 
-.ghostdrag { position: fixed; z-index: 50; pointer-events: none; opacity: .92; box-shadow: 0 10px 30px rgba(0,0,0,.25); transform: rotate(-2deg); }
+.opt, .ranked, .opt *, .ranked * { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.ghostdrag { position: fixed; z-index: 50; pointer-events: none; opacity: .95; box-shadow: 0 10px 30px rgba(0,0,0,.25); margin: 0; white-space: normal; writing-mode: horizontal-tb; box-sizing: border-box; }
+body.is-dragging { overflow: hidden; touch-action: none; }
 .dragging { opacity: .35; }
 .placeholder { height: 44px; border-radius: 10px; border: 2px dashed var(--accent); background: var(--drop); }
 
