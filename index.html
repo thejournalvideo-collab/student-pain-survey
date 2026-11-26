@@ -95,7 +95,8 @@
         <button class="add" id="addBtn" type="button"><span class="plus" aria-hidden="true">+</span> Add your own</button>
         <form class="addform" id="addForm" hidden>
           <label class="sr" for="addInput">Describe your pain point</label>
-          <input id="addInput" maxlength="60" placeholder="e.g. No space to meet" autocomplete="off">
+          <input id="addInput" maxlength="60" placeholder="e.g. No space to meet" autocomplete="off" aria-describedby="addError">
+          <p class="error" id="addError" role="alert" hidden></p>
           <div class="row"><button class="primary" type="submit">Add</button><button class="ghost" type="button" id="addCancel">Cancel</button></div>
         </form>
       </div>
@@ -125,6 +126,7 @@
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="config.js?v=9"></script>
-<script src="app.js?v=22"></script>
+<script src="filter.js?v=1"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

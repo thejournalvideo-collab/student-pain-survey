@@ -135,13 +135,16 @@
   });
 
   // Add your own
-  function closeAdd() { $("addForm").hidden = true; $("addBtn").hidden = false; $("addInput").value = ""; }
+  function addMsg(m) { var el = $("addError"); el.textContent = m || ""; el.hidden = !m; $("addInput").setAttribute("aria-invalid", m ? "true" : "false"); }
+  function closeAdd() { $("addForm").hidden = true; $("addBtn").hidden = false; $("addInput").value = ""; addMsg(""); }
   $("addBtn").addEventListener("click", function () { $("addBtn").hidden = true; $("addForm").hidden = false; $("addInput").focus(); });
   $("addCancel").addEventListener("click", closeAdd);
+  $("addInput").addEventListener("input", function () { addMsg(""); });
   $("addForm").addEventListener("submit", function (e) {
     e.preventDefault(); var t = $("addInput").value.replace(/\s+/g, " ").trim(); if (!t) return;
+    if (window.isRude && window.isRude(t)) { addMsg("Please keep it polite. Try describing the problem in different words."); $("addInput").select(); return; }
     var dup = Object.keys(items).some(function (k) { return items[k].text.toLowerCase() === t.toLowerCase(); });
-    if (dup) { say("That option already exists"); $("addInput").select(); return; }
+    if (dup) { addMsg("That option is already on the list."); $("addInput").select(); return; }
     var id = "c" + (seq++); items[id] = { id: id, text: t, custom: true }; pool.push(id); closeAdd(); render(); say(t + " added to options");
   });
 
