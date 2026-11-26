@@ -65,11 +65,11 @@
 
   // ---------- what to rank by ----------
   var METRICS = {
-    score: { name: "Priority score", help: "#1 = 3 points, #2 = 2, #3 = 1; the bar shows it as % of the maximum possible" },
-    top1: { name: "Ranked #1", help: "% of students who ranked it number 1" },
-    top3: { name: "In top 3", help: "% of students who put it in their top 3" },
-    mentioned: { name: "Picked at all", help: "% of students who moved it into their ranking at any position" },
-    avgRank: { name: "Average position", help: "average position among students who picked it (lower = more painful)" }
+    score: { name: "Priority score", by: "priority score", cell: "priority score", help: "#1 = 3 points, #2 = 2, #3 = 1; the bar shows it as % of the maximum possible" },
+    top1: { name: "Most often #1", by: "how often it was ranked #1", cell: "% who ranked it #1", help: "% of students who ranked it number 1" },
+    top3: { name: "Most often in top 3", by: "how often it was in the top 3", cell: "% with it in their top 3", help: "% of students who put it in their top 3" },
+    mentioned: { name: "Picked by the most students", by: "how many students picked it", cell: "% who picked it", help: "% of students who moved it into their ranking at any position" },
+    avgRank: { name: "Best average position", by: "average position", cell: "average position (#1 = most painful)", help: "average position among students who picked it (lower = more painful)" }
   };
   function metricKey() { var el = document.getElementById("rankBy"); return (el && el.value) || "score"; }
   function mval(s, k) {
@@ -166,11 +166,11 @@
     $("status").textContent = filterLabel() + " · " + rows.length + " of " + all.length + " answers" + (testN && !$("fTest").checked ? " (" + testN + " test hidden)" : "") +
       (lastLoaded ? " · updated " + stamp(lastLoaded) : "") + ($("fAuto").checked ? " · live" : "");
     $("tN").textContent = rows.length;
-    if (list.length) { $("tTop").textContent = list[0].pain; $("tTopSub").textContent = "By " + METRICS[metricKey()].name.toLowerCase() + " · " + list[0].top3Pct + "% have it in their top 3 · " + list[0].top1Pct + "% ranked it #1"; }
+    if (list.length) { $("tTop").textContent = list[0].pain; $("tTopSub").textContent = "By " + METRICS[metricKey()].by + " · " + list[0].top3Pct + "% have it in their top 3 · " + list[0].top1Pct + "% ranked it #1"; }
     else { $("tTop").textContent = "–"; $("tTopSub").textContent = "Waiting for answers"; }
     $("tAvg").textContent = rows.length ? (rows.reduce(function (a, r) { return a + r.ranking.length; }, 0) / rows.length).toFixed(1) : "–";
-    $("rankHelp").textContent = "Ranked by " + METRICS[metricKey()].name.toLowerCase() + ": " + METRICS[metricKey()].help + ".";
-    $("matrixHelp").textContent = "Each cell = " + METRICS[metricKey()].name.toLowerCase() + " within that group. Darker = more painful. Outlined = that group's #1. Groups under 5 students are marked small, so treat them with care.";
+    $("rankHelp").textContent = "Ranked by " + METRICS[metricKey()].by + ": " + METRICS[metricKey()].help + ".";
+    $("matrixHelp").textContent = "Each cell = " + METRICS[metricKey()].cell + " within that group. Darker = more painful. Outlined = that group's #1. Groups under 5 students are marked small, so treat them with care.";
     $("bars").innerHTML = barsHTML(list);
     $("overallTable").innerHTML = list.length ? overallTableHTML(list) : "";
     $("matrix").innerHTML = matrixHTML(rows, $("groupBy").value);
@@ -245,9 +245,9 @@
     slides = [];
     slides.push("<p class='lead'>Student pain point survey · " + esc(sel) + "</p><h1>What gets in the way when students work on ideas or projects?</h1><div class='big'>" + rows.length + "</div><p class='lead'>students answered</p>");
     if (list.length) slides.push("<p class='lead'>The biggest pain</p><h1>" + esc(list[0].pain) + "</h1><div class='big'>" + list[0].top3Pct + "%</div><p class='lead'>put it in their top 3, and " + list[0].top1Pct + "% ranked it first</p>");
-    slides.push("<h1>Top pain points</h1><p class='lead'>Ranked by " + esc(METRICS[metricKey()].name.toLowerCase()) + "</p><div class='bars'>" + barsHTML(list, 8) + "</div>");
+    slides.push("<h1>Top pain points</h1><p class='lead'>Ranked by " + esc(METRICS[metricKey()].by) + "</p><div class='bars'>" + barsHTML(list, 8) + "</div>");
     ["subject", "triedProject"].forEach(function (f) {
-      if (groups(rows, f).length > 1) slides.push("<h1>By " + GROUP_NAMES[f].toLowerCase() + "</h1><p class='lead'>" + esc(METRICS[metricKey()].name) + " within each group. Outlined = that group's #1.</p><div class='scrollx'><table class='matrix'>" + matrixHTML(rows, f, 8) + "</table></div>");
+      if (groups(rows, f).length > 1) slides.push("<h1>By " + GROUP_NAMES[f].toLowerCase() + "</h1><p class='lead'>Each cell = " + esc(METRICS[metricKey()].cell) + " within each group. Outlined = that group's #1.</p><div class='scrollx'><table class='matrix'>" + matrixHTML(rows, f, 8) + "</table></div>");
     });
     var c = customCounts(rows);
     if (c.length) slides.push("<h1>In their own words</h1><p class='lead'>Pains students added themselves</p><ul class='lead'>" + c.slice(0, 8).map(function (x) { return "<li>" + esc(x.text) + "</li>"; }).join("") + "</ul>");
